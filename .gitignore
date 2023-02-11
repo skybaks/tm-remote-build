@@ -1,0 +1,9 @@
+#python
+__pycache__
+*.pyc
+#vscode
+.vscode/
+#openplanet
+*.zip
+*.op
+*.sig

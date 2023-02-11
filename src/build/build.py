@@ -1,26 +1,14 @@
-import socket
 import json
+import socket
+import struct
+import logging
+from api import OpenplanetTcpSocket
 
-def unload_plugin(sock: socket.socket, pluginId: str) -> None:
-    sock.send(json.dumps({
-        'command': 'unload_plugin',
-        'arguments': [
-            'id',
-            pluginId,
-        ]
-    }).encode())
-
-def load_plugin(sock: socket.socket, pluginPath: str) -> None:
-    sock.send(json.dumps({
-        'command': 'load_plugin',
-        'arguments': [
-            pluginPath
-        ]
-    }).encode())
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", 30000))
+    logging.basicConfig(level=logging.DEBUG)
 
-    unload_plugin(s, 'Testbed')
-    #load_plugin(s, "Testbed\\")
+    sock = OpenplanetTcpSocket(30000)
+    success = sock.send({'route': 'load_plugin'})
+    logger.info(sock.receive())
