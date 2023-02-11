@@ -1,16 +1,30 @@
 import json
 import logging
 import struct
-from enum import Enum
 from socket import socket, AF_INET, SOCK_STREAM
 
 logger = logging.getLogger(__name__)
 
+
 class OpenplanetTcpSocket:
-    def __init__(self, port: int) -> None:
+    def __init__(self) -> None:
         self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.connect(('localhost', port))
-        logger.debug(f"Connected to {str(self.socket)}")
+        self.connected = False
+
+    def try_connect(self, port: int) -> bool:
+        if self.connected:
+            return True
+
+        self.socket.settimeout(0.01)
+        try:
+            self.socket.connect(('localhost', port))
+            logger.debug(f"Connected to {str(self.socket)}")
+            self.connected = True
+        except Exception as e:
+            logger.debug(str(e))
+            self.connected = False
+        self.socket.settimeout(None)
+        return self.connected
 
     def send(self, data: 'bytes|dict|str') -> bool:
         send_data = data
@@ -39,3 +53,7 @@ class OpenplanetTcpSocket:
             data_bytes = data_bytes[0:data_length]
         return data_bytes.decode()
 
+
+class HotReloadAPI:
+    def __init__(self) -> None:
+        pass

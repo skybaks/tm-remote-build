@@ -12,23 +12,41 @@ void Main()
 
     while (true)
     {
-        sleep(10);
+        yield();
 
         Net::Socket@ client = g_socket.Accept();
         if (client !is null)
         {
-            int bytes = client.Available();
-            if (bytes > 0)
-            {
-                string response = g_router.Update(client.ReadRaw(bytes));
-                if (response != "")
-                {
-                    print("Sending response: " + tostring(response));
-                    client.Write(response);
-                }
-            }
+            startnew(HandleClient, client);
         }
     }
+}
+
+void HandleClient(ref@ socket)
+{
+    print("Got new client!");
+    Net::Socket@ client = cast<Net::Socket@>(socket);
+
+    while (true)
+    {
+        yield();
+
+        int bytes = client.Available();
+        if (bytes > 0)
+        {
+            string response = g_router.Update(client.ReadRaw(bytes));
+            if (response != "")
+            {
+                print("Sending response: " + tostring(response));
+                client.Write(response);
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+    print("Exit client");
 }
 
 string load_pluginTest(const string&in route, const string&in payload)
