@@ -1,7 +1,7 @@
 
 namespace API
 {
-    funcdef string CallbackMethod(const string&in, const string&in);
+    funcdef string CallbackMethod(const string&in, Json::Value@);
 
     class Router
     {
@@ -16,24 +16,23 @@ namespace API
             @m_routes[name] = callback;
         }
 
-        string Update(const string&in data)
+        string Update(const string&in payload)
         {
             string response = "";
-            Json::Value@ json = Json::Parse(data);
+            Json::Value@ json = Json::Parse(payload);
             string route = json.Get("route", Json::Value(""));
             if (route != "" && m_routes.Exists(route))
             {
-                response = cast<CallbackMethod@>(m_routes[route])(route, data);
+                response = cast<CallbackMethod@>(m_routes[route])(route, json["data"]);
+            }
+            else
+            {
+                auto jsonResp = Json::Object();
+                jsonResp["data"] = "";
+                jsonResp["error"] = "Not implemented: " + tostring(route);
+                response = Json::Write(jsonResp);
             }
             return response;
         }
     }
-
-    // Commands
-    //  - Load Plugin
-    //      -> response
-    //  - Unload Plugin
-    //      -> response
-    //  - Get plugins
-    //      -> response
 }

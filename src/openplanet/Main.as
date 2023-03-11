@@ -8,7 +8,11 @@ void Main()
     g_socket.Listen("localhost", 30000);
 
     @g_router = API::Router();
-    g_router.AddRoute("load_plugin", @load_pluginTest);
+    g_router.AddRoute("get_status", @Commands::GetStatus);
+    g_router.AddRoute("get_data_folder", @Commands::GetDataFolder);
+    g_router.AddRoute("get_app_folder", @Commands::GetAppFolder);
+    g_router.AddRoute("load_plugin", @Commands::LoadOrReloadPlugin);
+    g_router.AddRoute("unload_plugin", @Commands::UnloadPlugin);
 
     while (true)
     {
@@ -47,10 +51,4 @@ void HandleClient(ref@ socket)
         }
     }
     print("Exit client");
-}
-
-string load_pluginTest(const string&in route, const string&in payload)
-{
-    print("called load_pluginTest");
-    return "load_plugin not implemented!";
 }

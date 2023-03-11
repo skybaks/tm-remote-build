@@ -1,6 +1,7 @@
 import json
 import logging
 import struct
+import os
 from socket import socket, AF_INET, SOCK_STREAM
 
 logger = logging.getLogger(__name__)
@@ -71,14 +72,56 @@ class OpenplanetTcpSocket:
         return data_bytes.decode()
 
 
-class HotReloadAPI:
+class RemoteBuildAPI:
     def __init__(self, game: str, port: int) -> None:
         self.game = game
         self.openplanet = OpenplanetTcpSocket(port)
+        self.data_folder = ''
+        self.app_folder = ''
 
-    def send_route(self, route: str, data: dict) -> str:
-        response = ''
+    def send_route(self, route: str, data: dict) -> dict:
+        response = {}
         if self.openplanet.try_connect():
             self.openplanet.send({'route': route, 'data': data})
-            response = self.openplanet.receive()
+            response_text = self.openplanet.receive()
+            try:
+                response = json.loads(response_text)
+            except Exception as e:
+                logger.exception(e)
         return response
+
+    def get_status(self) -> bool:
+        response = self.send_route('get_status', {})
+        status = response.get('data', '')
+        return status == 'Alive'
+
+    def get_data_folder(self) -> bool:
+        response = self.send_route('get_data_folder', {})
+        response_data_folder = response.get('data', '')
+        if os.path.isdir(response_data_folder):
+            self.data_folder = response_data_folder
+            logger.debug('Set data folder to %s for game %s' % (self.data_folder, self.game))
+        return self.data_folder != ''
+
+    def get_app_folder(self) -> bool:
+        response = self.send_route('get_app_folder', {})
+        response_app_folder = response.get('data', '')
+        if os.path.isdir(response_app_folder):
+            self.app_folder = response_app_folder
+            logger.debug('Set app folder to %s for game %s' % (self.app_folder, self.game))
+        return self.app_folder != ''
+
+    def load_plugin(self, plugin_id, plugin_src='user', plugin_type='zip') -> bool:
+        response = self.send_route('load_plugin', {
+            'id': plugin_id,
+            'source': plugin_src,
+            'type': plugin_type,
+        })
+        if response:
+            if response.get('error', ''):
+                [logger.error(err) for err in response['error'].strip().split('\n')]
+            logger.info(response['data'])
+        return False
+
+    def unload_plugin(self, plugin_id) -> None:
+        pass

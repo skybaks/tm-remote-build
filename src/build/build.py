@@ -1,15 +1,16 @@
 import logging
-from api import OpenplanetTcpSocket
+from api import RemoteBuildAPI
 
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+games = [
+    RemoteBuildAPI('TMNEXT', 30000),
+    RemoteBuildAPI('MP4', 30001),
+    RemoteBuildAPI('TURBO', 30002),
+]
 
-    sock = OpenplanetTcpSocket(30000)
-    for i in range(3):
-        if sock.try_connect():
-            success = sock.send({'route': 'load_plugin'})
-            logger.info(sock.receive())
-        else:
-            logger.info("no luck...")
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
+    for game in games:
+        game.load_plugin('Testbed', 'user', 'folder')
