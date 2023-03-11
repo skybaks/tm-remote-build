@@ -3,6 +3,7 @@ import logging
 import struct
 import os
 from socket import socket, AF_INET, SOCK_STREAM
+from log import OpenplanetLog
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ class RemoteBuildAPI:
         self.openplanet = OpenplanetTcpSocket(port)
         self.data_folder = ''
         self.app_folder = ''
+        self.op_log = OpenplanetLog()
 
     def send_route(self, route: str, data: dict) -> dict:
         response = {}
@@ -101,6 +103,7 @@ class RemoteBuildAPI:
         if os.path.isdir(response_data_folder):
             self.data_folder = response_data_folder
             logger.debug('Set data folder to %s for game %s' % (self.data_folder, self.game))
+            self.op_log.set_path(os.path.join(self.data_folder, 'Openplanet.log'))
         return self.data_folder != ''
 
     def get_app_folder(self) -> bool:
@@ -112,16 +115,17 @@ class RemoteBuildAPI:
         return self.app_folder != ''
 
     def load_plugin(self, plugin_id, plugin_src='user', plugin_type='zip') -> bool:
+        self.op_log.start_monitor()
         response = self.send_route('load_plugin', {
             'id': plugin_id,
             'source': plugin_src,
             'type': plugin_type,
         })
+        log_msgs = self.op_log.end_monitor()
+        for msg in log_msgs:
+            if msg.source == 'ScriptEngine':
+                logger.info(msg.text)
         if response:
             if response.get('error', ''):
                 [logger.error(err) for err in response['error'].strip().split('\n')]
-            logger.info(response['data'])
-        return False
-
-    def unload_plugin(self, plugin_id) -> None:
-        pass
+        return response.get('error', '') == ''

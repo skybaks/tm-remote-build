@@ -3,8 +3,6 @@ namespace Commands
 {
     string GetStatus(const string&in route, Json::Value@ data)
     {
-        print("GetStatus");
-
         auto response = Json::Object();
         response["data"] = "Alive";
         response["error"] = "";
@@ -14,8 +12,6 @@ namespace Commands
 
     string GetDataFolder(const string&in route, Json::Value@ data)
     {
-        print("GetDataFolder");
-
         auto response = Json::Object();
         response["data"] = IO::FromDataFolder("");
         response["error"] = "";
@@ -25,8 +21,6 @@ namespace Commands
 
     string GetAppFolder(const string&in route, Json::Value@ data)
     {
-        print("GetAppFolder");
-
         auto response = Json::Object();
         response["data"] = IO::FromAppFolder("");
         response["error"] = "";
@@ -36,8 +30,6 @@ namespace Commands
 
     string LoadOrReloadPlugin(const string&in route, Json::Value@ data)
     {
-        print("LoadOrReloadPlugin");
-
         auto response = Json::Object();
         response["data"] = "";
         response["error"] = "";
@@ -49,7 +41,6 @@ namespace Commands
         auto unloadPluginHandle = Meta::GetPluginFromID(pluginId);
         if (unloadPluginHandle !is null)
         {
-            print("Plugin is currently loaded. Unloading...");
             Meta::UnloadPlugin(unloadPluginHandle);
             @unloadPluginHandle = null;
             yield();
@@ -94,7 +85,6 @@ namespace Commands
         }
 
         string pluginFullPath = pluginLocation + pluginSubfolder + pluginFileOrDir;
-        print(pluginFullPath);
         auto loadPluginHandle = Meta::LoadPlugin(pluginFullPath, source, type);
         if (loadPluginHandle !is null)
         {
@@ -106,17 +96,6 @@ namespace Commands
             errorText += "Plugin not loaded\n";
             response["error"] = errorText;
         }
-
-        return Json::Write(response);
-    }
-
-    string UnloadPlugin(const string&in route, Json::Value@ data)
-    {
-        print("UnloadPlugin");
-
-        auto response = Json::Object();
-        response["data"] = "";
-        response["error"] = "Not Implemented!";
 
         return Json::Write(response);
     }
