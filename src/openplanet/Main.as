@@ -20,6 +20,7 @@ void Main()
     g_router.AddRoute("get_data_folder", @Commands::GetDataFolder);
     g_router.AddRoute("get_app_folder", @Commands::GetAppFolder);
     g_router.AddRoute("load_plugin", @Commands::LoadOrReloadPlugin);
+    g_router.AddRoute("unload_plugin", @Commands::UnloadPlugin);
 
     while (true)
     {

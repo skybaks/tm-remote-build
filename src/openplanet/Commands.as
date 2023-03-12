@@ -99,4 +99,23 @@ namespace Commands
 
         return Json::Write(response);
     }
+
+    string UnloadPlugin(const string&in route, Json::Value@ data)
+    {
+        auto response = Json::Object();
+        response["data"] = "";
+        response["error"] = "";
+
+        string pluginId = data.Get("id", Json::Value(""));
+
+        auto unloadPluginHandle = Meta::GetPluginFromID(pluginId);
+        if (unloadPluginHandle !is null)
+        {
+            Meta::UnloadPlugin(unloadPluginHandle);
+            @unloadPluginHandle = null;
+            yield();
+        }
+
+        return Json::Write(response);
+    }
 }
