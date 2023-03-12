@@ -16,11 +16,11 @@ void Main()
     g_socket.Listen("localhost", g_port);
 
     @g_router = API::Router();
-    g_router.AddRoute("get_status", @Commands::GetStatus);
-    g_router.AddRoute("get_data_folder", @Commands::GetDataFolder);
-    g_router.AddRoute("get_app_folder", @Commands::GetAppFolder);
-    g_router.AddRoute("load_plugin", @Commands::LoadOrReloadPlugin);
-    g_router.AddRoute("unload_plugin", @Commands::UnloadPlugin);
+    g_router.AddRoute("get_status", @API::GetStatus);
+    g_router.AddRoute("get_data_folder", @API::GetDataFolder);
+    g_router.AddRoute("get_app_folder", @API::GetAppFolder);
+    g_router.AddRoute("load_plugin", @API::LoadOrReloadPlugin);
+    g_router.AddRoute("unload_plugin", @API::UnloadPlugin);
 
     while (true)
     {

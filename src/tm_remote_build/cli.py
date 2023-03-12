@@ -93,12 +93,12 @@ def main() -> None:
     args = parser.parse_args()
 
     source_path = full_path_normalized(args.source_path)
-    plugin_id = args.plugin_id if args.plugin_id else os.path.basename(source_path)
+    plugin_id = args.plugin_id if args.zip_plugin_id else os.path.basename(source_path)
 
     if args.zip:
         package_path = zip_plugin(
             source_path,
-            args.out_path,
+            args.zip_out_path,
             plugin_id,
             [exclude for exclude in args.zip_exclude.split(";") if exclude],
         )
