@@ -2,8 +2,8 @@ import logging
 import os
 import shutil
 import argparse
-from api import RemoteBuildAPI
-from package import zip_plugin
+from .api import RemoteBuildAPI
+from .package import zip_plugin
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def package_and_load(source_path, plugin_id) -> None:
                 game.load_plugin(plugin_id, "user", "zip")
 
 
-if __name__ == "__main__":
+def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
@@ -50,3 +50,7 @@ if __name__ == "__main__":
             args.plugin_id = os.path.basename(os.path.dirname(args.source_path))
 
     package_and_load(args.source_path, args.plugin_id)
+
+
+if __name__ == "__main__":
+    main()

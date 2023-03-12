@@ -3,7 +3,7 @@ import logging
 import struct
 import os
 from socket import socket, AF_INET, SOCK_STREAM
-from log import OpenplanetLog
+from .log import OpenplanetLog
 
 logger = logging.getLogger(__name__)
 

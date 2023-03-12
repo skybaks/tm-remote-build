@@ -3,6 +3,8 @@ __pycache__
 *.pyc
 env/
 venv/
+dist/
+*.lock
 #vscode
 .vscode/
 #openplanet

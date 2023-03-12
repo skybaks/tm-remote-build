@@ -1,0 +1,17 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "tm-remote-build"
+version = "1.0.0"
+description = "Build and deploy openplanet scripts"
+authors = ["skybaks <tmflame@gmail.com>"]
+readme = "readme.md"
+packages = [{include="tm_remote_build", from="src"}]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.scripts]
+tm-remote-build = "tm_remote_build:main"
