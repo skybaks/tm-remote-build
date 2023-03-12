@@ -2,8 +2,8 @@ import logging
 import os
 import shutil
 import argparse
-from api import RemoteBuildAPI
-from package import zip_plugin
+from .api import RemoteBuildAPI
+from .package import zip_plugin
 
 logger = logging.getLogger(__name__)
 

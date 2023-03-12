@@ -2,7 +2,6 @@ import zipfile
 import os
 import logging
 import pathlib
-import fnmatch
 
 logger = logging.getLogger(__name__)
 
