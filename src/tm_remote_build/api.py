@@ -82,6 +82,8 @@ class RemoteBuildAPI:
         self.data_folder = ""
         self.app_folder = ""
         self.op_log = OpenplanetLog()
+        self.logger = logging.getLogger(__name__ + self.game)
+        self.logger.init_game_name(self.game)
 
     def send_route(self, route: str, data: dict) -> dict:
         response = {}
@@ -91,7 +93,7 @@ class RemoteBuildAPI:
             try:
                 response = json.loads(response_text)
             except Exception as e:
-                logger.exception(e)
+                self.logger.exception(e)
         return response
 
     def get_status(self) -> bool:
@@ -136,10 +138,18 @@ class RemoteBuildAPI:
         log_msgs = self.op_log.end_monitor()
         for msg in log_msgs:
             if msg.source == "ScriptEngine":
-                logger.info(msg.text)
+                if ":  ERR :" in msg.text:
+                    self.logger.error(msg.text)
+                elif ": WARN :" in msg.text:
+                    self.logger.warning(msg.text)
+                else:
+                    self.logger.info(msg.text)
         if response:
             if response.get("error", ""):
-                [logger.error(err) for err in response["error"].strip().split("\n")]
+                [
+                    self.logger.error(err)
+                    for err in response["error"].strip().split("\n")
+                ]
         return response.get("error", "") == ""
 
     def unload_plugin(self, plugin_id) -> bool:
@@ -149,5 +159,8 @@ class RemoteBuildAPI:
         response = self.send_route("unload_plugin", {"id": plugin_id})
         if response:
             if response.get("error", ""):
-                [logger.error(err) for err in response["error"].strip().split("\n")]
+                [
+                    self.logger.error(err)
+                    for err in response["error"].strip().split("\n")
+                ]
         return response.get("error", "") == ""

@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 games = [
     RemoteBuildAPI("TMNEXT", 30000),
-    RemoteBuildAPI("   MP4", 30001),
-    RemoteBuildAPI(" TURBO", 30002),
+    RemoteBuildAPI("MP4", 30001),
+    RemoteBuildAPI("TURBO", 30002),
 ]
 
 
@@ -59,8 +59,6 @@ def load_dir(dir_path) -> None:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "source_path",
@@ -110,7 +108,3 @@ def main() -> None:
             load_dir(source_path)
         else:
             deploy_zip(source_path)
-
-
-if __name__ == "__main__":
-    main()
