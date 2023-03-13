@@ -1,3 +1,7 @@
+# 1.1.0
+
+* Remove zip feature from client - exclude filters didnt work as well as desired and KISS
+
 # 1.0.0
 
 * Remotely load and reload plugins

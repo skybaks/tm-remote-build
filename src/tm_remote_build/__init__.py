@@ -1,32 +1,32 @@
 import logging
-from colorama import init, Fore
-
-init(autoreset=True)
+import colorama
 
 
 class ColorFormatter(logging.Formatter):
     level_colors = {
-        "WARNING": Fore.YELLOW,
-        "ERROR": Fore.RED,
-        "DEBUG": Fore.BLUE,
-        "INFO": Fore.WHITE,
-        "CRITICAL": Fore.RED,
+        "WARNING": colorama.Fore.YELLOW,
+        "ERROR": colorama.Fore.RED,
+        "DEBUG": colorama.Fore.BLUE,
+        "INFO": colorama.Fore.WHITE,
+        "CRITICAL": colorama.Fore.RED,
     }
     game_colors = {
-        "TMNEXT": Fore.GREEN,
-        "MP4": Fore.BLUE,
-        "TURBO": Fore.YELLOW,
+        "TMNEXT": colorama.Fore.GREEN,
+        "MP4": colorama.Fore.BLUE,
+        "TURBO": colorama.Fore.YELLOW,
     }
     game_name = ""
 
     def format(self, record):
         color = self.level_colors.get(record.levelname, "")
         if color:
-            record.levelname = color + record.levelname + Fore.RESET
+            record.levelname = color + record.levelname + colorama.Fore.RESET
             record.msg = color + record.msg
         if self.game_name:
             record.gamename = (
-                self.game_colors.get(self.game_name, "") + self.game_name + Fore.RESET
+                self.game_colors.get(self.game_name, "")
+                + self.game_name
+                + colorama.Fore.RESET
             )
         return logging.Formatter.format(self, record)
 
@@ -39,7 +39,7 @@ class ColorLogger(logging.Logger):
         self.console.setFormatter(color_formatter)
         self.addHandler(self.console)
 
-    def init_game_name(self, game_name="") -> None:
+    def init_game_name(self, game_name) -> None:
         color_formatter = ColorFormatter(
             "[%(gamename)-16s] [%(levelname)-17s]  %(message)s"
         )
@@ -47,4 +47,5 @@ class ColorLogger(logging.Logger):
         self.console.setFormatter(color_formatter)
 
 
+colorama.init(autoreset=True)
 logging.setLoggerClass(ColorLogger)
