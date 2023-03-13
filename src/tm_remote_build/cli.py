@@ -51,7 +51,7 @@ def load_dir(dir_path) -> None:
             plugin_test_path = full_path_normalized(
                 os.path.join(game.data_folder, "Plugins", plugin_id)
             )
-            if os.path.samefile(source_path, plugin_test_path):
+            if os.path.isdir(plugin_test_path) and os.path.samefile(source_path, plugin_test_path):
                 game.load_plugin(plugin_id, "user", "folder")
                 break
     else:

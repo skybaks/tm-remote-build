@@ -11,3 +11,4 @@ dist/
 *.zip
 *.op
 *.sig
+.build/
