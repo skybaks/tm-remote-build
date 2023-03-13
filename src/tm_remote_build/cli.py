@@ -3,7 +3,6 @@ import os
 import shutil
 import argparse
 from .api import RemoteBuildAPI
-from .package import zip_plugin
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,11 @@ def deploy_zip(zip_path) -> None:
     for game in games:
         if game.get_data_folder():
             if game.unload_plugin(plugin_id):
-                shutil.copy(package_path, os.path.join(game.data_folder, "Plugins"))
+                target_path = os.path.join(game.data_folder, "Plugins")
+                if os.path.isdir(target_path) and not os.path.samefile(
+                    os.path.dirname(package_path), target_path
+                ):
+                    shutil.copy(package_path, target_path)
                 if game.load_plugin(plugin_id, "user", "zip"):
                     loaded_once = True
     if not loaded_once:
@@ -51,7 +54,9 @@ def load_dir(dir_path) -> None:
             plugin_test_path = full_path_normalized(
                 os.path.join(game.data_folder, "Plugins", plugin_id)
             )
-            if os.path.isdir(plugin_test_path) and os.path.samefile(source_path, plugin_test_path):
+            if os.path.isdir(plugin_test_path) and os.path.samefile(
+                source_path, plugin_test_path
+            ):
                 game.load_plugin(plugin_id, "user", "folder")
                 break
     else:
@@ -64,47 +69,11 @@ def main() -> None:
         "source_path",
         help="Path to the source code of the plugin or zipped *.op file",
     )
-    parser.add_argument(
-        "-z",
-        "--zip",
-        action="store_true",
-        help="Zip the plugin from source to a *.op file",
-    )
-    parser.add_argument(
-        "-o",
-        "--zip_out_path",
-        default=".build/",
-        help="Intermediate output path for zipped plugin package. From here it will be copied to all active game plugins folders",
-    )
-    parser.add_argument(
-        "-x",
-        "--zip_exclude",
-        default="",
-        help="A semicolon ';' delimited string of file or folder patterns to exclude from the package zip",
-    )
-    parser.add_argument(
-        "-i",
-        "--zip_plugin_id",
-        default="",
-        help="Optionally specify the plugin ID if it is different than the name of the source directory",
-    )
     args = parser.parse_args()
 
     source_path = full_path_normalized(args.source_path)
-    plugin_id = args.plugin_id if args.zip_plugin_id else os.path.basename(source_path)
 
-    if args.zip:
-        package_path = zip_plugin(
-            source_path,
-            args.zip_out_path,
-            plugin_id,
-            [exclude for exclude in args.zip_exclude.split(";") if exclude],
-        )
-        if not package_path:
-            return
-        deploy_zip(package_path)
+    if os.path.isdir(source_path):
+        load_dir(source_path)
     else:
-        if os.path.isdir(source_path):
-            load_dir(source_path)
-        else:
-            deploy_zip(source_path)
+        deploy_zip(source_path)
