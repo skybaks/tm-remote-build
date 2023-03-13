@@ -2,4 +2,5 @@
 name = "Remote Build"
 author = "skybaxrider"
 category = "Development"
-version = "1.0"
+siteid = 347
+version = "1.0.0"
