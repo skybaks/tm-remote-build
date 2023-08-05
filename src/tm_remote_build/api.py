@@ -76,14 +76,11 @@ class OpenplanetTcpSocket:
 
 
 class RemoteBuildAPI:
-    def __init__(self, game: str, port: int) -> None:
-        self.game = game
+    def __init__(self, port: int) -> None:
         self.openplanet = OpenplanetTcpSocket(port)
         self.data_folder = ""
-        self.app_folder = ""
         self.op_log = OpenplanetLog()
-        self.logger = logging.getLogger(__name__ + self.game)
-        self.logger.init_game_name(self.game)
+        self.get_data_folder()
 
     def send_route(self, route: str, data: dict) -> dict:
         response = {}
@@ -93,7 +90,7 @@ class RemoteBuildAPI:
             try:
                 response = json.loads(response_text)
             except Exception as e:
-                self.logger.exception(e)
+                logger.exception(e)
         return response
 
     def get_status(self) -> bool:
@@ -112,17 +109,9 @@ class RemoteBuildAPI:
             self.op_log.set_path(os.path.join(self.data_folder, "Openplanet.log"))
         return self.data_folder != ""
 
-    def get_app_folder(self) -> bool:
-        if not self.get_status():
-            return False
-
-        response = self.send_route("get_app_folder", {})
-        response_app_folder = response.get("data", "")
-        if os.path.isdir(response_app_folder):
-            self.app_folder = response_app_folder
-        return self.app_folder != ""
-
-    def load_plugin(self, plugin_id, plugin_src="user", plugin_type="zip") -> bool:
+    def load_plugin(
+        self, plugin_id: str, plugin_src: str = "user", plugin_type: str = "zip"
+    ) -> bool:
         if not self.get_status():
             return False
 
@@ -136,31 +125,31 @@ class RemoteBuildAPI:
             },
         )
         log_msgs = self.op_log.end_monitor()
-        for msg in log_msgs:
-            if msg.source == "ScriptEngine":
-                if ":  ERR :" in msg.text:
-                    self.logger.error(msg.text)
-                elif ": WARN :" in msg.text:
-                    self.logger.warning(msg.text)
-                else:
-                    self.logger.info(msg.text)
+        self.print_log(log_msgs)
         if response:
             if response.get("error", ""):
-                [
-                    self.logger.error(err)
-                    for err in response["error"].strip().split("\n")
-                ]
+                [logger.error(err) for err in response["error"].strip().split("\n")]
         return response.get("error", "") == ""
 
-    def unload_plugin(self, plugin_id) -> bool:
+    def unload_plugin(self, plugin_id: str) -> bool:
         if not self.get_status():
             return False
 
+        self.op_log.start_monitor()
         response = self.send_route("unload_plugin", {"id": plugin_id})
+        log_msgs = self.op_log.end_monitor()
+        self.print_log(log_msgs)
         if response:
             if response.get("error", ""):
-                [
-                    self.logger.error(err)
-                    for err in response["error"].strip().split("\n")
-                ]
+                [logger.error(err) for err in response["error"].strip().split("\n")]
         return response.get("error", "") == ""
+
+    def print_log(self, log_msgs: "list[str]") -> None:
+        for msg in log_msgs:
+            if msg.source == "ScriptEngine":
+                if ":  ERR :" in msg.text:
+                    print(msg.text)
+                elif ": WARN :" in msg.text:
+                    print(msg.text)
+                else:
+                    print(msg.text)
