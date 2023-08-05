@@ -64,7 +64,7 @@ def main() -> None:
         sub_input.add_argument(
             "-op",
             "--openplanet",
-            choices=["OpenplanetNext", "Openplanet4", "OpenplanetTurbo"],
+            choices=DEFAULT_PORTS.keys(),
             help="Alternative to entering port number. Will use the default port for that game.",
         )
         sub_input.add_argument(
@@ -91,7 +91,7 @@ def main() -> None:
         "--plugin_src",
         choices=["user", "app"],
         default="user",
-        help='The source location to load plugin from where "user" is the OpenplanetX/Plugins folder in C:\\Users and "app" is the Openplanet/Plugins folder in the game directory. Default is "user" if unspecified.',
+        help='The source location to load plugin from where "user" is the C:/Users/User/OpenplanetX/Plugins folder and "app" is the Openplanet/Plugins folder in the game directory. Default is "user" if unspecified.',
     )
 
     args = parser.parse_args()

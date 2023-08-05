@@ -1,5 +1,6 @@
 import os
 import logging
+from colorama import Fore
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,8 @@ class OpenplanetLog:
             for msg in log_msgs:
                 if msg.source == "ScriptEngine":
                     if ":  ERR :" in msg.text:
-                        print(msg.text)
+                        print(Fore.RED + msg.text + Fore.RESET)
                     elif ": WARN :" in msg.text:
-                        print(msg.text)
+                        print(Fore.YELLOW + msg.text + Fore.RESET)
                     else:
                         print(msg.text)
