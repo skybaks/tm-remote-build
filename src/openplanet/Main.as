@@ -2,16 +2,34 @@
 Net::Socket@ g_socket = null;
 API::Router@ g_router = null;
 
+[Setting category="General" name="Remote Connection Port" description="Port used by the plugin to listen on a TCP socket. If changed the plugin will need to be restarted."]
 #if TMNEXT
-int g_port = 30000;
+int Setting_RemoteConnectionPort = 30000;
 #elif MP4
-int g_port = 30001;
+int Setting_RemoteConnectionPort = 30001;
 #elif TURBO
-int g_port = 30002;
+int Setting_RemoteConnectionPort = 30002;
 #endif
+
+int g_port = 0;
+string g_menuMessage = "";
+
+void RenderMenu()
+{
+    UI::TextDisabled(g_menuMessage);
+}
 
 void Main()
 {
+    g_port = Setting_RemoteConnectionPort;
+    g_menuMessage = "\\$070" + Icons::Kenney::Cloud + " \\$zRemote Build Port - " + tostring(g_port);
+    if (g_port == 0)
+    {
+        g_menuMessage = "\\$700" + Icons::Kenney::TimesCircle + " \\$zRemote Build Port - OFF";
+        error("Configured Remote Connection Port is " + tostring(g_port) + ". Exiting...");
+        return;
+    }
+
     @g_socket = Net::Socket();
     g_socket.Listen("localhost", g_port);
 

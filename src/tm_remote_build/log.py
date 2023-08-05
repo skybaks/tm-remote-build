@@ -1,5 +1,6 @@
 import os
 import logging
+from colorama import Fore
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,26 @@ class OpenplanetLog:
         if not os.path.isfile(self.file_path):
             self.last_len = 0
             return
-        with open(self.file_path, "r") as log_file:
-            self.last_len = len(log_file.read())
-            logger.debug(str(self.last_len))
+        self.last_len = os.stat(self.file_path).st_size
+        logger.debug(str(self.last_len))
 
-    def end_monitor(self) -> "list[OpenplanetLogMessage]":
+    def end_monitor(self, print_msgs: bool = True) -> None:
         if not os.path.isfile(self.file_path):
             return []
         new_lines = []
         with open(self.file_path, "r") as log_file:
-            new_lines = log_file.read()[self.last_len :].splitlines()
+            log_file.seek(self.last_len)
+            new_lines = log_file.read().splitlines()
             logger.debug(str(len(new_lines)) + " new lines found")
-        return [OpenplanetLogMessage(line) for line in new_lines]
+        if print_msgs:
+            log_msgs: "list[OpenplanetLogMessage]" = [
+                OpenplanetLogMessage(line) for line in new_lines
+            ]
+            for msg in log_msgs:
+                if msg.source == "ScriptEngine":
+                    if ":  ERR :" in msg.text:
+                        print(Fore.RED + msg.text + Fore.RESET)
+                    elif ": WARN :" in msg.text:
+                        print(Fore.YELLOW + msg.text + Fore.RESET)
+                    else:
+                        print(msg.text)
