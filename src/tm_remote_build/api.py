@@ -124,8 +124,7 @@ class RemoteBuildAPI:
                 "type": plugin_type,
             },
         )
-        log_msgs = self.op_log.end_monitor()
-        self.print_log(log_msgs)
+        self.op_log.end_monitor()
         if response:
             if response.get("error", ""):
                 [logger.error(err) for err in response["error"].strip().split("\n")]
@@ -137,19 +136,8 @@ class RemoteBuildAPI:
 
         self.op_log.start_monitor()
         response = self.send_route("unload_plugin", {"id": plugin_id})
-        log_msgs = self.op_log.end_monitor()
-        self.print_log(log_msgs)
+        self.op_log.end_monitor()
         if response:
             if response.get("error", ""):
                 [logger.error(err) for err in response["error"].strip().split("\n")]
         return response.get("error", "") == ""
-
-    def print_log(self, log_msgs: "list[str]") -> None:
-        for msg in log_msgs:
-            if msg.source == "ScriptEngine":
-                if ":  ERR :" in msg.text:
-                    print(msg.text)
-                elif ": WARN :" in msg.text:
-                    print(msg.text)
-                else:
-                    print(msg.text)

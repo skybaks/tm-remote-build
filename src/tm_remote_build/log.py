@@ -41,7 +41,7 @@ class OpenplanetLog:
         self.last_len = os.stat(self.file_path).st_size
         logger.debug(str(self.last_len))
 
-    def end_monitor(self) -> "list[OpenplanetLogMessage]":
+    def end_monitor(self, print_msgs: bool = True) -> None:
         if not os.path.isfile(self.file_path):
             return []
         new_lines = []
@@ -49,4 +49,15 @@ class OpenplanetLog:
             log_file.seek(self.last_len)
             new_lines = log_file.read().splitlines()
             logger.debug(str(len(new_lines)) + " new lines found")
-        return [OpenplanetLogMessage(line) for line in new_lines]
+        if print_msgs:
+            log_msgs: "list[OpenplanetLogMessage]" = [
+                OpenplanetLogMessage(line) for line in new_lines
+            ]
+            for msg in log_msgs:
+                if msg.source == "ScriptEngine":
+                    if ":  ERR :" in msg.text:
+                        print(msg.text)
+                    elif ": WARN :" in msg.text:
+                        print(msg.text)
+                    else:
+                        print(msg.text)
