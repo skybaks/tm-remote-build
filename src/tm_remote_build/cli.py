@@ -27,7 +27,7 @@ def unload(args) -> None:
 def load(args) -> None:
     api = RemoteBuildAPI(args.port)
     loaded = api.load_plugin(
-        args.plugin_id, plugin_src="user", plugin_type=args.plugin_type
+        args.plugin_id, plugin_src=args.plugin_src, plugin_type=args.plugin_type
     )
     if loaded:
         logger.info('Commanded load for plugin with ID "%s"' % (args.plugin_id,))
@@ -44,7 +44,7 @@ def main() -> None:
     def common_args(subparser) -> None:
         subparser.add_argument(
             "plugin_id",
-            help="The plugin ID to be unloaded. For a folder source plugin this would be the folder name. For a zipped source plugin this would be the filename without extension.",
+            help="The plugin ID to be targeted. For a folder source plugin this would be the folder name. For a zipped source plugin this would be the filename without extension.",
         )
         subparser.add_argument(
             "-p",
@@ -71,6 +71,12 @@ def main() -> None:
         help="The type of plugin source to load from.",
     )
     common_args(sub_load)
+    sub_load.add_argument(
+        "--plugin_src",
+        choices=["user", "app"],
+        default="user",
+        help='The source location to load plugin from where "user" is the OpenplanetX/Plugins folder in C:\\Users and "app" is the Openplanet/Plugins folder in the game directory. Default is "user" if unspecified.',
+    )
     sub_load.set_defaults(func=load)
 
     args = parser.parse_args()
