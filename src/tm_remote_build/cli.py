@@ -48,20 +48,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="tm-remote-build", description="Load or unload Openplanet plugins"
     )
-    subparser = parser.add_subparsers()
+    subparser = parser.add_subparsers(required=True)
 
     def common_args(sub_input) -> None:
         sub_input.add_argument(
             "plugin_id",
             help="The plugin ID to be targeted. For a folder source plugin this would be the folder name. For a zipped source plugin this would be the filename without extension.",
         )
-        sub_input.add_argument(
+        comm_group = sub_input.add_mutually_exclusive_group(required=True)
+        comm_group.add_argument(
             "-p",
             "--port",
             type=int,
             help="The port used to communicate with Openplanet",
         )
-        sub_input.add_argument(
+        comm_group.add_argument(
             "-op",
             "--openplanet",
             choices=DEFAULT_PORTS.keys(),
@@ -73,7 +74,7 @@ def main() -> None:
             action="store_true",
             help="Enable verbose logging for debugging Remote Build to Openplanet communication",
         )
-        sub_input.description = "Specify at least one of [--port, --openplanet] to enable communication with the Remote Build plugin running in the game. If both are specified, --port will take precedence."
+        sub_input.description = "Specify at one of [--port, --openplanet] to enable communication with the Remote Build plugin running in the game."
 
     sub_unload = subparser.add_parser("unload", help="Unload a plugin")
     sub_unload.set_defaults(func=unload)
@@ -95,9 +96,6 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-
-    if args.openplanet is None and args.port is None:
-        parser.error("Must specify at least one of [--port, --openplanet]")
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
     args.func(args)
