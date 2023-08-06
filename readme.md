@@ -4,9 +4,15 @@ Load or unload [Openplanet](https://openplanet.dev/) plugins from your IDE.
 
 ## Setup
 
-Install tm-remote-build using pip: `python -m pip install --upgrade tm-remote-build`
+Install the VS Code extension [here](https://github.com/skybaks/vscode-openplanet-remotebuild)
+
+**[Optional]** Install tm-remote-build using pip: `python -m pip install --upgrade tm-remote-build`
 
 ## Usage
+
+Use the integrated build task in the VS Code extension
+
+OR
 
 Load a plugin: `tm-remote-build load folder MyPlugin -op OpenplanetNext`
 
