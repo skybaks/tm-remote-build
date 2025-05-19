@@ -10,11 +10,10 @@ PLUGIN_ID = "unk"
 
 def _get_next_brackets(log_line: str, start_offset) -> "tuple[int, str]":
     if "[" not in log_line[start_offset:]:
-        return len(log_line)-1, log_line
+        return len(log_line) - 1, log_line
     start_index = log_line.index("[", start_offset)
     if "]" not in log_line[start_index:]:
-        return len(log_line)-1, log_line
-        # return start_index, ""
+        return len(log_line) - 1, log_line
     end_index = log_line.index("]", start_index)
     return end_index + 1, log_line[start_index + 1 : end_index].strip()
 
@@ -41,14 +40,15 @@ class OpenplanetLogMessage:
         global PLUGIN_ID
         if "/OpenplanetNext/Plugins/" in self._text and self._text[1] == ":":
             self._text = self._text.split("/OpenplanetNext/Plugins/", 1)[1]
-            self._text = self._text.split("/", 1)[1] # could add "./" at the start here but ctrl+click doesn't work for me in vscode (but `/` would)
+            # could add "./" at the start here but ctrl+click doesn't work for me in vscode (but `/` would)
+            self._text = self._text.split("/", 1)[1]
         return self._text
 
     def print(self) -> None:
         if ":  ERR :" in self.text:
-            print(Fore.RED + self.text + Fore.RESET)
+            print(f"{Fore.RED}{self.text}{Fore.RESET}")
         elif ": WARN :" in self.text:
-            print(Fore.YELLOW + self.text + Fore.RESET)
+            print(f"{Fore.YELLOW}{self.text}{Fore.RESET}")
         else:
             print(self.text)
 
@@ -77,9 +77,13 @@ class OpenplanetLog:
 
     # return true if we are done; sleep between calls
     def check_if_log_done(self, log_done_limit: int) -> bool:
-        slice, s_len, new_len = self.get_log_slice(self.last_checked_len, -1)
+        log_slice, s_len, new_len = self.get_log_slice(self.last_checked_len, -1)
         self.last_checked_len = new_len
-        filtered_msgs = [msg for msg in slice if msg.source == "ScriptEngine" or PLUGIN_ID == msg.detected_plugin]
+        filtered_msgs = [
+            msg
+            for msg in log_slice
+            if msg.source == "ScriptEngine" or PLUGIN_ID == msg.detected_plugin
+        ]
         if len(filtered_msgs) > 0:
             self.check_after_hit_count = 0
             for msg in filtered_msgs:
@@ -103,9 +107,11 @@ class OpenplanetLog:
         self.last_checked_len = self.last_len
         logger.debug(f"last line len: {self.last_len}")
 
-    def get_log_slice(self, start: int, end: int) -> "tuple[list[OpenplanetLogMessage], int, int]":
+    def get_log_slice(
+        self, start: int, end: int
+    ) -> "tuple[list[OpenplanetLogMessage], int, int]":
         if not os.path.isfile(self.file_path):
-            return []
+            return ([], 0, 0)
         new_lines = []
         bytes_read = 0
         end_offset = 0
@@ -121,30 +127,26 @@ class OpenplanetLog:
         ]
         return log_msgs, bytes_read, end_offset
 
-
     def end_monitor(self, print_msgs: bool = True) -> None:
-        # if not os.path.isfile(self.file_path):
-        #     return []
-        # new_lines = []
-        # with open(self.file_path, "r") as log_file:
-        #     log_file.seek(self.last_len)
-        #     new_lines = log_file.read().splitlines()
-            # logger.debug(str(len(new_lines)) + " new lines found")
         log_msgs, _, _ = self.get_log_slice(self.last_len, -1)
-        errors = [msg for msg in log_msgs if ":  ERR :" in msg.text and msg.source == "ScriptEngine"]
+        errors = [
+            msg
+            for msg in log_msgs
+            if ":  ERR :" in msg.text and msg.source == "ScriptEngine"
+        ]
         if print_msgs:
             for msg in log_msgs:
                 if msg.source == "ScriptEngine":
                     msg.print()
             if len(errors) > 0:
                 print(f"------------ ERRORS ------------")
-                print(Fore.RED + str(len(errors)) + " errors found" + Fore.RESET)
+                print(f"{Fore.RED}{str(len(errors))} error(s) found{Fore.RESET}")
                 for msg in errors:
                     msg.print()
         self.last_len = 0
 
     def watch_and_print_log_updates(
-        self, log_done_limit: int = 3, log_check_interval: int = 0.5
+        self, log_done_limit: int = 3, log_check_interval: float = 0.5
     ) -> None:
         with self as opl:
             while not opl.check_if_log_done(log_done_limit):

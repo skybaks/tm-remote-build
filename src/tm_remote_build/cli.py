@@ -7,7 +7,6 @@ from .api import RemoteBuildAPI
 from .log import PLUGIN_ID
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 DEFAULT_PORTS = {
     "OpenplanetNext": 30000,
@@ -21,6 +20,7 @@ def get_port(args) -> int:
         return args.port
     else:
         return DEFAULT_PORTS.get(args.openplanet, 0)
+
 
 def get_host(args) -> str:
     if args.host is not None:
@@ -43,11 +43,14 @@ def unload(args) -> None:
 def load(args) -> None:
     global PLUGIN_ID
     PLUGIN_ID = args.plugin_id
-    print(f"Set PLUGIN_ID to {PLUGIN_ID}")
+    logger.debug(f"Set PLUGIN_ID to {PLUGIN_ID}")
     api = RemoteBuildAPI(get_port(args), host=get_host(args), op_dir=args.op_dir)
     loaded = api.load_plugin(
-        args.plugin_id, plugin_src=args.plugin_src, plugin_type=args.plugin_type,
-        log_done_limit=args.log_done_limit, log_check_interval=args.log_check_interval
+        args.plugin_id,
+        plugin_src=args.plugin_src,
+        plugin_type=args.plugin_type,
+        log_done_limit=args.log_done_limit,
+        log_check_interval=args.log_check_interval,
     )
     if loaded:
         logger.info('Commanded load for plugin with ID "%s"' % (args.plugin_id,))
@@ -55,6 +58,7 @@ def load(args) -> None:
         logger.error(
             'Problem commanding load for plugin with ID "%s"' % (args.plugin_id,)
         )
+
 
 def cmd_watch(args) -> None:
     global PLUGIN_ID
@@ -64,7 +68,6 @@ def cmd_watch(args) -> None:
         opl.seek_back(args.back)
         while not opl.check_if_log_done(args.log_done_limit):
             time.sleep(args.log_check_interval)
-
 
 
 def main() -> None:
@@ -78,16 +81,15 @@ def main() -> None:
             "plugin_id",
             help="The plugin ID to be targeted. For a folder source plugin this would be the folder name. For a zipped source plugin this would be the filename without extension.",
         )
-        # sub_input.add_argument(
-        #     "-l", "--logs-only", action="store_true",
-        #     help="Don't reload the plugin, but wait for logs from a reload.",
-        # )
         sub_input.add_argument(
-            "-d", "--op-dir", type=str,
+            "-d",
+            "--op-dir",
+            type=str,
             help="Specify the directory to look for Openplanet.log (auto-detected by default)",
         )
         sub_input.add_argument(
-            "--host", type=str,
+            "--host",
+            type=str,
             help="The host to connect to (IP or hostname)",
         )
         comm_group = sub_input.add_mutually_exclusive_group(required=True)
@@ -119,7 +121,10 @@ def main() -> None:
     sub_watch.set_defaults(func=cmd_watch)
     common_args(sub_watch)
     sub_watch.add_argument(
-        "-b", "--back", type=int, default=0,
+        "-b",
+        "--back",
+        type=int,
+        default=0,
         help="Go back this many lines in the log file when starting to watch.",
     )
 
@@ -140,11 +145,17 @@ def main() -> None:
 
     for sub in [sub_load, sub_watch]:
         sub.add_argument(
-            "-l", "--log-done-limit", type=int, default=3,
+            "-l",
+            "--log-done-limit",
+            type=int,
+            default=3,
             help="After logs begin, the number of consecutive checks that find no relevant updates to wait for before stopping.",
         )
         sub.add_argument(
-            "-i", "--log-check-interval", type=float, default=1.0,
+            "-i",
+            "--log-check-interval",
+            type=float,
+            default=1.0,
             help="The interval in seconds to wait between checks for new log messages.",
         )
 

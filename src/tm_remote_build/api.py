@@ -8,7 +8,6 @@ from .log import OpenplanetLog
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class OpenplanetTcpSocket:
@@ -17,7 +16,6 @@ class OpenplanetTcpSocket:
         self.host = host
         self.port = port
         self.connected = False
-        # self.op_dir = op_dir
 
     def try_connect(self) -> bool:
         if self.connected:
@@ -37,11 +35,12 @@ class OpenplanetTcpSocket:
         return self.connected
 
     def send(self, data: "bytes|dict|str") -> bool:
-        send_data = data
         if isinstance(data, dict):
             send_data = json.dumps(data).encode()
         elif isinstance(data, str):
             send_data = data.encode()
+        else:
+            send_data = data
         count = 0
         try:
             count = self.socket.send(send_data)
@@ -52,7 +51,7 @@ class OpenplanetTcpSocket:
         return count > 0
 
     def receive(self) -> str:
-        hdr_bytes = b""
+        hdr_bytes: bytes = b""
         while len(hdr_bytes) < 4:
             try:
                 hdr_bytes += self.socket.recv(1)
@@ -60,7 +59,6 @@ class OpenplanetTcpSocket:
                 self.connected = False
                 logger.debug("Error receiving header bytes")
                 return ""
-        # (data_length,) = struct.unpack("L", hdr_bytes)
         (data_length,) = struct.unpack("I", hdr_bytes)
         logger.debug(f"Header indicates {str(data_length)} bytes of data")
 
@@ -97,8 +95,7 @@ class RemoteBuildAPI:
             try:
                 response = json.loads(response_text)
             except Exception as e:
-                # logger.exception(e)
-                pass
+                logger.debug(e)
         return response
 
     def get_status(self) -> bool:
@@ -122,7 +119,12 @@ class RemoteBuildAPI:
         return self.data_folder != ""
 
     def load_plugin(
-        self, plugin_id: str, plugin_src: str = "user", plugin_type: str = "zip", log_done_limit: int = 3, log_check_interval: int = 0.5
+        self,
+        plugin_id: str,
+        plugin_src: str = "user",
+        plugin_type: str = "zip",
+        log_done_limit: int = 3,
+        log_check_interval: float = 0.5,
     ) -> bool:
         if not self.get_status():
             return False
