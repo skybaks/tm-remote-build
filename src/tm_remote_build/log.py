@@ -8,36 +8,42 @@ logger = logging.getLogger(__name__)
 PLUGIN_ID = "unk"
 
 
-def _get_next_brackets(log_line: str, start_offset) -> "tuple[int, str]":
+def _get_next_brackets(log_line: str, start_offset) -> "tuple[str, int]":
     if "[" not in log_line[start_offset:]:
-        return len(log_line) - 1, log_line
+        return ("", len(log_line) - 1)
     start_index = log_line.index("[", start_offset)
     if "]" not in log_line[start_index:]:
-        return len(log_line) - 1, log_line
+        return ("", len(log_line) - 1)
     end_index = log_line.index("]", start_index)
-    return end_index + 1, log_line[start_index + 1 : end_index].strip()
+    return (log_line[start_index + 1 : end_index].strip(), end_index + 1)
 
 
 class OpenplanetLogMessage:
     def __init__(self, log_line: str) -> None:
         self.source = ""
+        self.level = ""
         self.time = ""
         self.subject = ""
         self._text = ""
-        self.detected_plugin = ""
 
-        index, self.source = _get_next_brackets(log_line, 0)
-        if not log_line[index : index + 2] == "  ":
-            index, self.time = _get_next_brackets(log_line, index)
-            if not log_line[index : index + 2] == "  ":
-                index, self.subject = _get_next_brackets(log_line, index)
-                if not log_line[index : index + 2] == "  ":
-                    index, self.detected_plugin = _get_next_brackets(log_line, index)
+        index = self._parse_log_line(log_line)
         self._text = log_line[index + 2 :]
+
+    def _parse_log_line(self, log_line: str) -> int:
+        self.source, index = _get_next_brackets(log_line, 0)
+        if log_line[index : index + 2] == "  ":
+            return index
+        self.level, index = _get_next_brackets(log_line, index)
+        if log_line[index : index + 2] == "  ":
+            return index
+        self.time, index = _get_next_brackets(log_line, index)
+        if log_line[index : index + 2] == "  ":
+            return index
+        self.subject, index = _get_next_brackets(log_line, index)
+        return index
 
     @property
     def text(self) -> str:
-        global PLUGIN_ID
         if "/OpenplanetNext/Plugins/" in self._text and self._text[1] == ":":
             self._text = self._text.split("/OpenplanetNext/Plugins/", 1)[1]
             # could add "./" at the start here but ctrl+click doesn't work for me in vscode (but `/` would)
@@ -82,7 +88,7 @@ class OpenplanetLog:
         filtered_msgs = [
             msg
             for msg in log_slice
-            if msg.source == "ScriptEngine" or PLUGIN_ID == msg.detected_plugin
+            if msg.source == "ScriptEngine" or PLUGIN_ID == msg.subject
         ]
         if len(filtered_msgs) > 0:
             self.check_after_hit_count = 0
