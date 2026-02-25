@@ -9,6 +9,8 @@ int Setting_RemoteConnectionPort = 30000;
 int Setting_RemoteConnectionPort = 30001;
 #elif TURBO
 int Setting_RemoteConnectionPort = 30002;
+#elif FOREVER
+int Setting_RemoteConnectionPort = 30003;
 #endif
 
 int g_port = 0;
