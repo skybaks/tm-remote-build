@@ -10,6 +10,7 @@ DEFAULT_PORTS = {
     "OpenplanetNext": 30000,
     "Openplanet4": 30001,
     "OpenplanetTurbo": 30002,
+    "OpenplanetUnited": 30003
 }
 
 
@@ -99,3 +100,4 @@ def main() -> None:
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
     args.func(args)
+
