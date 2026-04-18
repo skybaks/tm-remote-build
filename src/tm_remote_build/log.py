@@ -14,15 +14,18 @@ def _get_next_brackets(log_line, start_offset) -> "tuple[int, str]":
 class OpenplanetLogMessage:
     def __init__(self, log_line: str) -> None:
         self.source = ""
+        self.level = ""
         self.time = ""
         self.subject = ""
         self.text = ""
 
         index, self.source = _get_next_brackets(log_line, 0)
         if not log_line[index : index + 2] == "  ":
-            index, self.time = _get_next_brackets(log_line, index)
+            index, self.level = _get_next_brackets(log_line, index)
             if not log_line[index : index + 2] == "  ":
-                index, self.subject = _get_next_brackets(log_line, index)
+                index, self.time = _get_next_brackets(log_line, index)
+                if not log_line[index : index + 2] == "  ":
+                    index, self.subject = _get_next_brackets(log_line, index)
         self.text = log_line[index + 2 :]
 
 
@@ -33,7 +36,10 @@ class OpenplanetLog:
 
     def set_path(self, file_path) -> None:
         if os.path.isfile(file_path):
+            logger.debug(f"Using {file_path} as log file")
             self.file_path = file_path
+        else:
+            logger.error(f"Log file not found at {file_path}")
 
     def start_monitor(self) -> None:
         if not os.path.isfile(self.file_path):
@@ -56,9 +62,9 @@ class OpenplanetLog:
             ]
             for msg in log_msgs:
                 if msg.source == "ScriptEngine":
-                    if ":  ERR :" in msg.text:
+                    if ":  ERR :" in msg.text or msg.level == "ERROR":
                         print(Fore.RED + msg.text + Fore.RESET)
-                    elif ": WARN :" in msg.text:
+                    elif ": WARN :" in msg.text or msg.level == "WARN":
                         print(Fore.YELLOW + msg.text + Fore.RESET)
                     else:
                         print(msg.text)

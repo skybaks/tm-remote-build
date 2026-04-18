@@ -22,7 +22,7 @@ def get_port(args) -> int:
 
 
 def unload(args) -> None:
-    api = RemoteBuildAPI(get_port(args))
+    api = RemoteBuildAPI(get_port(args), args.host, args.openplanet_directory)
     unloaded = api.unload_plugin(args.plugin_id)
     if unloaded:
         logger.info('Commanded unload for plugin with ID "%s"' % (args.plugin_id,))
@@ -33,7 +33,7 @@ def unload(args) -> None:
 
 
 def load(args) -> None:
-    api = RemoteBuildAPI(get_port(args))
+    api = RemoteBuildAPI(get_port(args), args.host, args.openplanet_directory)
     loaded = api.load_plugin(
         args.plugin_id, plugin_src=args.plugin_src, plugin_type=args.plugin_type
     )
@@ -51,7 +51,7 @@ def main() -> None:
     )
     subparser = parser.add_subparsers(required=True)
 
-    def common_args(sub_input) -> None:
+    def common_args(sub_input: "argparse.ArgumentParser") -> None:
         sub_input.add_argument(
             "plugin_id",
             help="The plugin ID to be targeted. For a folder source plugin this would be the folder name. For a zipped source plugin this would be the filename without extension.",
@@ -68,6 +68,17 @@ def main() -> None:
             "--openplanet",
             choices=DEFAULT_PORTS.keys(),
             help="Alternative to entering port number. Will use the default port for that game.",
+        )
+        sub_input.add_argument(
+            "--host",
+            default="localhost",
+            help="Optionally specify the host address where Openplanet is running. Default is localhost",
+        )
+        sub_input.add_argument(
+            "-d",
+            "--openplanet-directory",
+            default="",
+            help="Optionally specify the Openplanet directory if the tool has trouble finding the log file",
         )
         sub_input.add_argument(
             "-v",

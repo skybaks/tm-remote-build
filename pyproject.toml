@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "tm-remote-build"
-version = "2.0.0"
+version = "2.1.0"
 description = "Build and deploy openplanet scripts"
 authors = ["skybaks <tmflame@gmail.com>"]
 readme = "readme.md"
