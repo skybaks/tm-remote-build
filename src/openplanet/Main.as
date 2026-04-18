@@ -13,6 +13,9 @@ int Setting_RemoteConnectionPort = 30002;
 int Setting_RemoteConnectionPort = 30003;
 #endif
 
+[Setting category="General" name="Listen Host (default local only)" description="Host used by the plugin to listen on a TCP socket. If empty the plugin will listen on localhost."]
+string Setting_ListenHost = "";
+
 int g_port = 0;
 string g_menuMessage = "";
 
@@ -33,7 +36,7 @@ void Main()
     }
 
     @g_socket = Net::Socket();
-    g_socket.Listen("localhost", g_port);
+    g_socket.Listen(Setting_ListenHost, g_port);
 
     @g_router = API::Router();
     g_router.AddRoute("get_status", @API::GetStatus);
@@ -49,6 +52,7 @@ void Main()
         Net::Socket@ client = g_socket.Accept();
         if (client !is null)
         {
+            print("Accepted connection from " + client.GetRemoteIP());
             startnew(HandleClient, client);
         }
     }
@@ -57,23 +61,26 @@ void Main()
 void HandleClient(ref@ socket)
 {
     Net::Socket@ client = cast<Net::Socket@>(socket);
+    auto remote = client.GetRemoteIP();
 
-    while (true)
-    {
+    while (true) {
         yield();
+        string err = client.IsHungUp() ? "IsHungUp=true" : !client.IsReady() ? "IsReady=false" : "";
+        if (err.Length > 0) {
+            print("Closing client connection: " + remote + " - " + err);
+            client.Close();
+            break;
+        }
 
         int bytes = client.Available();
-        if (bytes > 0)
-        {
+        if (bytes > 0) {
+            print("Bytes to read: " + client.Available());
             string response = g_router.Update(client.ReadRaw(bytes));
             if (response != "")
             {
+                // client.Write(uint32(response.Length));
                 client.Write(response);
             }
-        }
-        else
-        {
-            break;
         }
     }
 }

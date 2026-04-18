@@ -18,6 +18,7 @@ namespace API
 
         string Update(const string&in payload)
         {
+            trace('Read payload: ' + payload);
             string response = "";
             Json::Value@ json = Json::Parse(payload);
             string route = json.Get("route", Json::Value(""));
@@ -69,9 +70,9 @@ namespace API
         response["data"] = "";
         response["error"] = "";
 
-        string pluginId = data.Get("id", Json::Value(""));
-        string pluginSrc = data.Get("source", Json::Value(""));
-        string pluginType = data.Get("type", Json::Value(""));
+        string pluginId = data.Get("id", ("")); // Json::Value
+        string pluginSrc = data.Get("source", ("")); // Json::Value
+        string pluginType = data.Get("type", ("")); // Json::Value
 
         auto unloadPluginHandle = Meta::GetPluginFromID(pluginId);
         if (unloadPluginHandle !is null)
@@ -144,11 +145,12 @@ namespace API
         string pluginId = data.Get("id", Json::Value(""));
 
         auto unloadPluginHandle = Meta::GetPluginFromID(pluginId);
-        if (unloadPluginHandle !is null)
-        {
+        if (unloadPluginHandle !is null) {
             Meta::UnloadPlugin(unloadPluginHandle);
             @unloadPluginHandle = null;
             yield();
+        } else {
+            response["error"] = "Plugin not found";
         }
 
         return Json::Write(response);
