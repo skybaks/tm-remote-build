@@ -58,21 +58,34 @@ void HandleClient(ref@ socket)
 {
     Net::Socket@ client = cast<Net::Socket@>(socket);
 
+    string payload;
+
     while (true)
     {
         yield();
 
+        if (client is null or client.IsHungUp() or !client.IsReady())
+        {
+            payload = "";
+            continue;
+        }
+
         int bytes = client.Available();
         if (bytes > 0)
         {
-            string response = g_router.Update(client.ReadRaw(bytes));
-            if (response != "")
-            {
-                client.Write(response);
-            }
+            payload += client.ReadRaw(bytes);
         }
         else
         {
+            if (payload.Length > 0)
+            {
+                string response = g_router.Update(payload);
+                if (response != "")
+                {
+                    client.Write(response);
+                }
+                payload = "";
+            }
             break;
         }
     }

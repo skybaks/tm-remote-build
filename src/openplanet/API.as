@@ -18,6 +18,7 @@ namespace API
 
         string Update(const string&in payload)
         {
+            trace("payload: " + payload);
             string response = "";
             Json::Value@ json = Json::Parse(payload);
             string route = json.Get("route", Json::Value(""));
